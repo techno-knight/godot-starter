@@ -1,0 +1,24 @@
+# Antigravity AI Rules for Godot 4 2D Mobile Starter Kit
+
+These rules MUST be followed by the Antigravity AI whenever working in this workspace to ensure the architecture scales cleanly to 50+ scenes.
+
+## 1. Architectural Patterns
+- **Composition over Inheritance:** NEVER create deep inheritance chains (e.g. `CharacterBody2D` -> `Enemy` -> `ShooterEnemy` -> `BossShooterEnemy`). ALWAYS use the Component pattern. Attach `HealthComponent`, `HitboxComponent`, and `HurtboxComponent` to a base node to compose its behavior.
+- **Global Signal Bus:** NEVER couple scenes directly to each other. Use `autoload/SignalBus.gd`. For example, a `HUD` should never hold a reference to `Player`; it should listen to `SignalBus.score_updated`.
+- **State Machines:** For any complex entity logic (like Player movement or Enemy AI), always use the FSM setup defined in `core/fsm/StateMachine.gd` and `core/fsm/State.gd`.
+
+## 2. Performance & Scaling (50+ Scenes)
+- **Object Pooling:** DO NOT use `instantiate()` and `queue_free()` during active gameplay for frequent objects (bullets, hit effects, coins). ALWAYS use `autoload/PoolManager.gd` (`PoolManager.get_node_from_pool("pool_id")`).
+- **Scene Loading:** NEVER use `get_tree().change_scene_to_file()` directly for level transitions. ALWAYS use `autoload/SceneLoader.gd` to perform async threaded loading via `ResourceLoader.load_threaded_request` to prevent mobile stutters.
+
+## 3. Coding Standards (GDScript)
+- **Strict Typing:** ALWAYS use static typing in GDScript. Define return types for all functions (`-> void`, `-> int`) and variable types (`var health: int = 100`).
+- **Class Names:** Use `class_name` for all core components and states so they can be easily referenced across the project.
+- **Godot 4.6+ APIs:** Do not use deprecated Godot 3 patterns. 
+
+## 4. Save Systems
+- **Typed Resources:** Use `SaveData.gd` (a Godot Resource) for serializing game state, rather than unstructured JSON. Handle all I/O operations through `autoload/SaveManager.gd`.
+
+## 5. UI and Inputs
+- **Input Map:** Always use the defined Input Map actions (e.g., `Input.is_action_just_pressed("jump")`) instead of hardcoding keycodes.
+- **Process Modes:** Ensure UI that needs to run while paused has `process_mode = Node.PROCESS_MODE_ALWAYS`. Use `Node.PROCESS_MODE_WHEN_PAUSED` for pause menus.

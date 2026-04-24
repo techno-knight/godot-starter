@@ -1,0 +1,66 @@
+[gd_scene load_steps=12 format=3 uid="uid://e2m0b2c4n5p1"]
+
+[ext_resource type="Script" path="res://scenes/entities/enemy/Enemy.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://core/fsm/StateMachine.gd" id="2_fsm"]
+[ext_resource type="Script" path="res://scenes/entities/enemy/states/EnemyPatrol.gd" id="3_patrol"]
+[ext_resource type="Script" path="res://scenes/entities/enemy/states/EnemyChase.gd" id="4_chase"]
+[ext_resource type="Script" path="res://core/components/HealthComponent.gd" id="5_health"]
+[ext_resource type="Script" path="res://core/components/HitboxComponent.gd" id="6_hitbox"]
+[ext_resource type="Script" path="res://core/components/HurtboxComponent.gd" id="7_hurtbox"]
+[ext_resource type="Texture2D" uid="uid://d3x" path="res://icon.svg" id="8_icon"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
+size = Vector2(64, 64)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hitbox"]
+size = Vector2(68, 68)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurtbox"]
+size = Vector2(68, 68)
+
+[node name="Enemy" type="CharacterBody2D"]
+collision_layer = 4
+script = ExtResource("1_enemy")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1, 0, 0, 1)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("8_icon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_enemy")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("5_health")
+max_health = 50
+
+[node name="HitboxComponent" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("6_hitbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitboxComponent"]
+shape = SubResource("RectangleShape2D_hitbox")
+debug_color = Color(1, 0, 0, 0.42)
+
+[node name="HurtboxComponent" type="Area2D" parent="." node_paths=PackedStringArray("health_component")]
+collision_layer = 0
+collision_mask = 16
+script = ExtResource("7_hurtbox")
+health_component = NodePath("../HealthComponent")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtboxComponent"]
+shape = SubResource("RectangleShape2D_hurtbox")
+debug_color = Color(0, 1, 0, 0.42)
+
+[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
+script = ExtResource("2_fsm")
+initial_state = NodePath("EnemyPatrol")
+
+[node name="EnemyPatrol" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy")]
+script = ExtResource("3_patrol")
+enemy = NodePath("../..")
+
+[node name="EnemyChase" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy")]
+script = ExtResource("4_chase")
+enemy = NodePath("../..")

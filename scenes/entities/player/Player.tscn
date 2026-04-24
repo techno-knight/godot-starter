@@ -1,0 +1,57 @@
+[gd_scene load_steps=8 format=3 uid="uid://p1m0b2c4n5p0"]
+
+[ext_resource type="Script" path="res://scenes/entities/player/Player.gd" id="1_player"]
+[ext_resource type="Script" path="res://core/fsm/StateMachine.gd" id="2_fsm"]
+[ext_resource type="Script" path="res://scenes/entities/player/states/PlayerIdle.gd" id="3_idle"]
+[ext_resource type="Script" path="res://scenes/entities/player/states/PlayerRun.gd" id="4_run"]
+[ext_resource type="Script" path="res://scenes/entities/player/states/PlayerJump.gd" id="5_jump"]
+[ext_resource type="Script" path="res://core/components/HealthComponent.gd" id="6_health"]
+[ext_resource type="Script" path="res://core/components/HurtboxComponent.gd" id="7_hurtbox"]
+[ext_resource type="Texture2D" uid="uid://d3x" path="res://icon.svg" id="8_icon"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(64, 64)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurtbox"]
+size = Vector2(68, 68)
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 2
+script = ExtResource("1_player")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("6_icon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_player")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("6_health")
+max_health = 100
+
+[node name="HurtboxComponent" type="Area2D" parent="." node_paths=PackedStringArray("health_component")]
+collision_layer = 16
+collision_mask = 8
+script = ExtResource("7_hurtbox")
+health_component = NodePath("../HealthComponent")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtboxComponent"]
+shape = SubResource("RectangleShape2D_hurtbox")
+debug_color = Color(0, 1, 0, 0.42)
+
+[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
+script = ExtResource("2_fsm")
+initial_state = NodePath("PlayerIdle")
+
+[node name="PlayerIdle" type="Node" parent="StateMachine" node_paths=PackedStringArray("player")]
+script = ExtResource("3_idle")
+player = NodePath("../..")
+
+[node name="PlayerRun" type="Node" parent="StateMachine" node_paths=PackedStringArray("player")]
+script = ExtResource("4_run")
+player = NodePath("../..")
+
+[node name="PlayerJump" type="Node" parent="StateMachine" node_paths=PackedStringArray("player")]
+script = ExtResource("5_jump")
+player = NodePath("../..")
